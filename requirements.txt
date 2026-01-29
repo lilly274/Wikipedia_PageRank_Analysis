@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+wikipedia-api
+networkx
+dash
+plotly
+pandas
+requests
+scipy

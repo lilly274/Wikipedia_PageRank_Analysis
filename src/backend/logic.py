@@ -1,0 +1,30 @@
+import wikipediaapi
+import networkx as nx
+
+
+def get_wikipedia_data(start_node: str, depth: int = 2):
+    wiki = wikipediaapi.Wikipedia(
+        user_agent="PolitikAnalyseBot (example@example.com)",
+        language="de"
+    )
+
+    graph = nx.DiGraph()
+
+    def crawl(page_title: str, current_depth: int):
+        if current_depth > depth:
+            return
+
+        page = wiki.page(page_title)
+        if not page.exists():
+            return
+
+        links = list(page.links.keys())[:10]
+
+        for link in links:
+            graph.add_edge(page_title, link)
+            crawl(link, current_depth + 1)
+
+    crawl(start_node, 1)
+
+    pagerank_scores = nx.pagerank(graph)
+    return graph, pagerank_scores
