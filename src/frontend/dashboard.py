@@ -162,6 +162,7 @@ import requests
 import networkx as nx
 import networkx.algorithms.community as community_graph
 import math
+import numpy as np
 
 app = dash.Dash(__name__)
 
@@ -185,29 +186,25 @@ def build_layout(n_clicks, topic):
     pos = nx.spring_layout(G, seed=42)
     communities = list(community_graph.greedy_modularity_communities(G))
 
-    # ---------- EDGES ----------
-    edge_x, edge_y = [], []
-    for u, v in G.edges():
-        x0, y0 = pos[u]
-        x1, y1 = pos[v]
-        edge_x += [x0, x1, None]
-        edge_y += [y0, y1, None]
-
-    edge_trace = go.Scatter(
-        x=edge_x,
-        y=edge_y,
-        mode="lines",
-        line=dict(width=0.5, color="rgba(150,150,150,0.4)"),
-        hoverinfo="none"
-    )
+    cluster_centers = {
+        i: np.random.uniform(-1, 1, size=2)
+        for i in range(len(communities))
+    }
 
     # ---------- NODES ----------
     node_x, node_y, labels, raw_sizes, node_color = [], [], [], [], []
 
+    pos = {}
     community_map = {}
     for i, comm in enumerate(communities):
         for node in comm:
             community_map[node] = i
+            sub_pos = nx.spring_layout(
+                G.subgraph(comm),
+                center=cluster_centers[i],
+                scale=0.3
+            )
+            pos.update(sub_pos)
 
     for node in G.nodes():
         x, y = pos[node]
@@ -237,6 +234,22 @@ def build_layout(n_clicks, topic):
             colorscale="Viridis",
             line=dict(width=1, color="black")
         )
+    )
+
+    # ---------- EDGES ----------
+    edge_x, edge_y = [], []
+    for u, v in G.edges():
+        x0, y0 = pos[u]
+        x1, y1 = pos[v]
+        edge_x += [x0, x1, None]
+        edge_y += [y0, y1, None]
+
+    edge_trace = go.Scatter(
+        x=edge_x,
+        y=edge_y,
+        mode="lines",
+        line=dict(width=0.5, color="rgba(150,150,150,0.4)"),
+        hoverinfo="none"
     )
 
     fig = go.Figure(data=[edge_trace, node_trace])
