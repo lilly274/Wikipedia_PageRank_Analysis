@@ -11,6 +11,26 @@ import numpy as np
 
 app = dash.Dash(__name__)
 
+def empty_figure():
+    fig = go.Figure()
+
+    fig.update_layout(
+        xaxis=dict(
+            visible=False,
+            showgrid=False,
+            zeroline=False
+        ),
+        yaxis=dict(
+            visible=False,
+            showgrid=False,
+            zeroline=False
+        ),
+        margin=dict(l=20, r=20, t=20, b=20)
+    )
+
+    return fig
+
+
 def build_layout(n_clicks, topic):
     if n_clicks == 0:
         return go.Figure(), []
@@ -141,10 +161,8 @@ app.layout = html.Div(
         # ---------- HEADER ----------
         html.Div(
             style={
-                "background": "white",
                 "padding": "30px 40px",
                 "borderRadius": "14px",
-                "boxShadow": "0 10px 25px rgba(0,0,0,0.06)",
                 "marginBottom": "30px"
             },
             children=[
@@ -169,54 +187,6 @@ app.layout = html.Div(
             ]
         ),
 
-        # ---------- CONTROL PANEL ----------
-        html.Div(
-            style={
-                "display": "flex",
-                "gap": "20px",
-                "alignItems": "flex-end",
-                "background": "white",
-                "padding": "25px 30px",
-                "borderRadius": "14px",
-                "boxShadow": "0 10px 25px rgba(0,0,0,0.06)",
-                "marginBottom": "30px"
-            },
-            children=[
-                html.Div([
-                    html.Label(
-                        "Startartikel / Thema",
-                        style={"fontWeight": "500", "marginBottom": "6px", "display": "block"}
-                    ),
-                    dcc.Input(
-                        id="input-topic",
-                        type="text",
-                        value="Bündnis 90/Die Grünen",
-                        style={
-                            "width": "360px",
-                            "padding": "10px 12px",
-                            "borderRadius": "8px",
-                            "border": "1px solid #ddd",
-                            "fontSize": "14px"
-                        }
-                    )
-                ]),
-                html.Button(
-                    "Analyse starten",
-                    id="submit",
-                    n_clicks=0,
-                    style={
-                        "padding": "11px 20px",
-                        "borderRadius": "10px",
-                        "border": "none",
-                        "background": "linear-gradient(135deg, #4f46e5, #6366f1)",
-                        "color": "white",
-                        "fontWeight": "600",
-                        "cursor": "pointer"
-                    }
-                )
-            ]
-        ),
-
         # ---------- GRAPH ----------
         html.Div(
             style={
@@ -227,6 +197,49 @@ app.layout = html.Div(
                 "marginBottom": "30px"
             },
             children=[
+                html.Div(
+                    style={
+                        "display": "flex",
+                        "gap": "20px",
+                        "alignItems": "flex-end",
+                        "background": "white",
+                        "padding": "25px 30px"
+                    },
+                    children=[
+                        html.Div([
+                            html.Label(
+                                "Filter",
+                                style={"fontWeight": "500", "marginBottom": "6px", "display": "block"}
+                            ),
+                            dcc.Input(
+                                id="input-topic",
+                                type="text",
+                                value="Bündnis 90/Die Grünen",
+                                style={
+                                    "width": "360px",
+                                    "padding": "10px 12px",
+                                    "borderRadius": "8px",
+                                    "border": "1px solid #ddd",
+                                    "fontSize": "14px"
+                                }
+                            )
+                        ]),
+                        html.Button(
+                            "Analyse starten",
+                            id="submit",
+                            n_clicks=0,
+                            style={
+                                "padding": "11px 20px",
+                                "borderRadius": "10px",
+                                "border": "none",
+                                "background": "linear-gradient(135deg, #4f46e5, #6366f1)",
+                                "color": "white",
+                                "fontWeight": "600",
+                                "cursor": "pointer"
+                            }
+                        )
+                    ]
+                ),
                 dcc.Graph(
                     id="graph",
                     style={"height": "650px"}
@@ -288,6 +301,8 @@ app.layout = html.Div(
     State("input-topic", "value")
 )
 def update(n_clicks, topic):
+    if n_clicks == 0:
+        return empty_figure(), []
     return build_layout(n_clicks, topic)
 
 if __name__ == "__main__":
