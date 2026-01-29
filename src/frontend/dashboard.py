@@ -214,11 +214,11 @@ def build_layout(n_clicks, topic):
         node_x.append(x)
         node_y.append(y)
         labels.append(node)
-        raw_sizes.append(math.log(pagerank[node] + 1e-6))
+        raw_sizes.append(pagerank[node])
         node_color.append(community_map.get(node, 0))
 
     # Size normalization
-    min_size, max_size = 15, 50
+    min_size, max_size = 6, 22
     min_pr, max_pr = min(raw_sizes), max(raw_sizes)
     sizes = [
         min_size + (s - min_pr) / (max_pr - min_pr) * (max_size - min_size)
@@ -228,9 +228,10 @@ def build_layout(n_clicks, topic):
     node_trace = go.Scatter(
         x=node_x,
         y=node_y,
-        mode="markers+text",
+        mode="markers",
+        hovertext=labels,
+        hoverinfo="text",
         text=labels,
-        textposition="top center",
         marker=dict(
             size=sizes,
             color=node_color,
