@@ -108,12 +108,29 @@ def build_layout(n_clicks, topic):
     )
 
     # ---------- EDGES ----------
-    edge_x, edge_y = [], []
+    edge_x, edge_y, annotations = [], [], []
     for u, v in G.edges():
         x0, y0 = pos[u]
         x1, y1 = pos[v]
         edge_x += [x0, x1, None]
         edge_y += [y0, y1, None]
+        annotations.append(
+            dict(
+                ax=x0,
+                ay=y0,
+                x=x1,
+                y=y1,
+                xref="x",
+                yref="y",
+                axref="x",
+                ayref="y",
+                showarrow=True,
+                arrowhead=3,
+                arrowsize=1,
+                arrowwidth=0.6,
+                arrowcolor="rgba(120,120,120,0.6)"
+            )
+        )
 
     edge_trace = go.Scatter(
         x=edge_x,
@@ -125,6 +142,7 @@ def build_layout(n_clicks, topic):
 
     fig = go.Figure(data=[edge_trace, node_trace])
     fig.update_layout(
+        annotations=annotations,
         showlegend=False,
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
