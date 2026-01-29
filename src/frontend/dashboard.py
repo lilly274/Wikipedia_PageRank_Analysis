@@ -192,7 +192,7 @@ def build_layout(n_clicks, topic):
     }
 
     # ---------- NODES ----------
-    node_x, node_y, labels, raw_sizes, node_color = [], [], [], [], []
+    node_x, node_y, labels, raw_sizes, node_color, texts = [], [], [], [], [], []
 
     pos = {}
     community_map = {}
@@ -208,14 +208,19 @@ def build_layout(n_clicks, topic):
 
     for node in G.nodes():
         x, y = pos[node]
+        pr = pagerank[node]
         node_x.append(x)
         node_y.append(y)
         labels.append(node)
         raw_sizes.append(pagerank[node])
         node_color.append(community_map.get(node, 0))
+        texts.append(
+            f"<b>{node}</b><br>"
+            f"PageRank: {pr:.4f}<br>"
+        )
 
     # Size normalization
-    min_size, max_size = 6, 22
+    min_size, max_size = 15, 50
     min_pr, max_pr = min(raw_sizes), max(raw_sizes)
     sizes = [
         min_size + (s - min_pr) / (max_pr - min_pr) * (max_size - min_size)
@@ -226,7 +231,7 @@ def build_layout(n_clicks, topic):
         x=node_x,
         y=node_y,
         mode="markers",
-        hovertext=labels,
+        hovertext=texts,
         hoverinfo="text",
         text=labels,
         marker=dict(
