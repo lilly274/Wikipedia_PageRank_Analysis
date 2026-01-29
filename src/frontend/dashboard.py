@@ -284,36 +284,157 @@ def build_layout(n_clicks, topic):
     return fig, df.to_dict("records")
 
 #--------------------------------------------------------------------
-app.layout = html.Div([
-    html.H1("Wikipedia PageRank Analyse"),
-    html.Plaintext(
-        "Diese Visualisierung zeigt die relative Bedeutung von Knoten in einem gerichteten Netzwerk anhand des PageRank-Algorithmus am Beispiel von Wikipedia. Ziel ist es,\n"
-        "reputationsbasierte Wichtigkeit sichtbar zu machen und strukturelle Rollen im Netzwerk zu identifizieren."
-    ),
-    dcc.Input(
-        id="input-topic",
-        type="text",
-        value="Bündnis 90/Die Grünen",
-        style={"width": "400px"}
-    ),
-    html.Button("Analyse starten", id="submit", n_clicks=0),
 
-    dcc.Graph(id="graph"),
+app.layout = html.Div(
+    style={
+        "fontFamily": "Inter, system-ui, -apple-system, BlinkMacSystemFont",
+        "backgroundColor": "#f5f7fb",
+        "padding": "40px"
+    },
+    children=[
 
-    html.H4("Knotenübersicht"),
-    dash_table.DataTable(
-        id="node-table",
-        columns=[
-            {"name": "Rang", "id": "Rang"},
-            {"name": "Name", "id": "Name"},
-            {"name": "PageRank", "id": "PageRank", "type": "numeric", "format": {"specifier": ".4f"}},
-            {"name": "Eingehende Kanten", "id": "Eingehende Kanten"},
-            {"name": "Ausgehende Kanten", "id": "Ausgehende Kanten"}
-        ],
-        style_table={"width": "80%"},
-        style_cell={"textAlign": "center"}
-    )
-])
+        # ---------- HEADER ----------
+        html.Div(
+            style={
+                "background": "white",
+                "padding": "30px 40px",
+                "borderRadius": "14px",
+                "boxShadow": "0 10px 25px rgba(0,0,0,0.06)",
+                "marginBottom": "30px"
+            },
+            children=[
+                html.H1(
+                    "Wikipedia PageRank Analyse",
+                    style={
+                        "marginBottom": "10px",
+                        "fontWeight": "600",
+                        "letterSpacing": "-0.5px"
+                    }
+                ),
+                html.P(
+                    "Diese Visualisierung zeigt die relative Bedeutung von Artikeln "
+                    "in einem gerichteten Wikipedia-Netzwerk auf Basis des PageRank-Algorithmus. "
+                    "Ziel ist es, reputationsbasierte Wichtigkeit und strukturelle Rollen sichtbar zu machen.",
+                    style={
+                        "color": "#555",
+                        "maxWidth": "900px",
+                        "lineHeight": "1.6"
+                    }
+                )
+            ]
+        ),
+
+        # ---------- CONTROL PANEL ----------
+        html.Div(
+            style={
+                "display": "flex",
+                "gap": "20px",
+                "alignItems": "flex-end",
+                "background": "white",
+                "padding": "25px 30px",
+                "borderRadius": "14px",
+                "boxShadow": "0 10px 25px rgba(0,0,0,0.06)",
+                "marginBottom": "30px"
+            },
+            children=[
+                html.Div([
+                    html.Label(
+                        "Startartikel / Thema",
+                        style={"fontWeight": "500", "marginBottom": "6px", "display": "block"}
+                    ),
+                    dcc.Input(
+                        id="input-topic",
+                        type="text",
+                        value="Bündnis 90/Die Grünen",
+                        style={
+                            "width": "360px",
+                            "padding": "10px 12px",
+                            "borderRadius": "8px",
+                            "border": "1px solid #ddd",
+                            "fontSize": "14px"
+                        }
+                    )
+                ]),
+                html.Button(
+                    "Analyse starten",
+                    id="submit",
+                    n_clicks=0,
+                    style={
+                        "padding": "11px 20px",
+                        "borderRadius": "10px",
+                        "border": "none",
+                        "background": "linear-gradient(135deg, #4f46e5, #6366f1)",
+                        "color": "white",
+                        "fontWeight": "600",
+                        "cursor": "pointer"
+                    }
+                )
+            ]
+        ),
+
+        # ---------- GRAPH ----------
+        html.Div(
+            style={
+                "background": "white",
+                "padding": "20px",
+                "borderRadius": "14px",
+                "boxShadow": "0 10px 25px rgba(0,0,0,0.06)",
+                "marginBottom": "30px"
+            },
+            children=[
+                dcc.Graph(
+                    id="graph",
+                    style={"height": "650px"}
+                )
+            ]
+        ),
+
+        # ---------- TABLE ----------
+        html.Div(
+            style={
+                "background": "white",
+                "padding": "25px",
+                "borderRadius": "14px",
+                "boxShadow": "0 10px 25px rgba(0,0,0,0.06)"
+            },
+            children=[
+                html.H4(
+                    "Knotenübersicht",
+                    style={"marginBottom": "15px"}
+                ),
+                dash_table.DataTable(
+                    id="node-table",
+                    columns=[
+                        {"name": "Rang", "id": "Rang"},
+                        {"name": "Name", "id": "Name"},
+                        {"name": "PageRank", "id": "PageRank", "type": "numeric",
+                         "format": {"specifier": ".4f"}},
+                        {"name": "Eingehende Kanten", "id": "Eingehende Kanten"},
+                        {"name": "Ausgehende Kanten", "id": "Ausgehende Kanten"}
+                    ],
+                    style_table={
+                        "width": "100%",
+                        "overflowX": "auto"
+                    },
+                    style_cell={
+                        "textAlign": "center",
+                        "padding": "10px",
+                        "fontSize": "13px"
+                    },
+                    style_header={
+                        "backgroundColor": "#f0f2f8",
+                        "fontWeight": "600",
+                        "border": "none"
+                    },
+                    style_data={
+                        "borderBottom": "1px solid #eee"
+                    }
+                )
+            ]
+        )
+    ]
+)
+
 
 @app.callback(
     Output("graph", "figure"),
