@@ -284,17 +284,24 @@ app.layout = html.Div([
 
     html.H4("Knotenübersicht"),
     dash_table.DataTable(
-        id="node-table",
-        columns=[
-            {"name": "Rang", "id": "Rang"},
-            {"name": "Name", "id": "Name"},
-            {"name": "PageRank", "id": "PageRank", "type": "numeric", "format": {"specifier": ".4f"}},
-            {"name": "Eingehende Kanten", "id": "Eingehende Kanten"},
-            {"name": "Ausgehende Kanten", "id": "Ausgehende Kanten"}
-        ],
-        style_table={"width": "80%"},
-        style_cell={"textAlign": "center"}
-    )
+    id="node-table",
+    columns=[
+        {"name": "Rang", "id": "Rang"},
+        {"name": "Name", "id": "Name"},
+        {"name": "PageRank", "id": "PageRank", "type": "numeric", "format": {"specifier": ".4f"}},
+        {"name": "Eingehende Kanten", "id": "Eingehende Kanten"},
+        {"name": "Ausgehende Kanten", "id": "Ausgehende Kanten"}
+    ],
+    style_table={"width": "80%"},
+    style_cell={"textAlign": "center"},
+    
+    # 👇 DAS ist der Export
+    export_format="csv",        # oder "xlsx"
+    export_headers="display",
+    sort_action="native",
+    filter_action="native"
+)
+
 ])
 
 @app.callback(
