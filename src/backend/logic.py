@@ -2,7 +2,7 @@ import wikipediaapi
 import networkx as nx
 
 
-def get_wikipedia_data(start_node: str, depth: int = 2):
+def get_wikipedia_data(start_node: str, depth: int, edge_number: int):
     wiki = wikipediaapi.Wikipedia(
         user_agent="PolitikAnalyseBot (example@example.com)",
         language="de"
@@ -18,7 +18,7 @@ def get_wikipedia_data(start_node: str, depth: int = 2):
         if not page.exists():
             return
 
-        links = list(page.links.keys())[:10]
+        links = list(page.links.keys())[:edge_number]
 
         for link in links:
             graph.add_edge(page_title, link)

@@ -1,7 +1,9 @@
+from datetime import datetime
+
 import dash
 import pandas as pd
 from dash import dcc, html, Input, Output, State
-from dash import dash_table
+from dash import dash_table, callback
 import plotly.graph_objects as go
 import requests
 import networkx as nx
@@ -12,6 +14,7 @@ import numpy as np
 app = dash.Dash(__name__)
 
 def empty_figure():
+
     fig = go.Figure()
 
     fig.update_layout(
@@ -31,14 +34,18 @@ def empty_figure():
     return fig
 
 
-def build_layout(n_clicks, topic):
+def build_layout(n_clicks, topic, depth, edge_number):
     if n_clicks == 0:
-        return go.Figure(), []
+        return empty_figure(), []
 
     # ---------- API ----------
     response = requests.get(
         "http://127.0.0.1:8000/analyze",
-        params={"topic": topic}
+        params={
+            "topic": topic,
+            "depth": depth,
+            "edge_number": edge_number,
+        }
     )
     data = response.json()
 
@@ -209,55 +216,189 @@ app.layout = html.Div(
         html.Div(
             style={
                 "background": "white",
-                "padding": "20px",
+                "padding": "24px 28px",
                 "borderRadius": "14px",
                 "boxShadow": "0 10px 25px rgba(0,0,0,0.06)",
                 "marginBottom": "30px"
             },
             children=[
+
+                # ---------- TOP BAR ----------
+                # ---------- TOP BAR ----------
                 html.Div(
                     style={
-                        "display": "flex",
-                        "gap": "20px",
-                        "alignItems": "flex-end",
-                        "background": "white",
-                        "padding": "25px 30px"
+                        "display": "grid",
+                        "gridTemplateColumns": "minmax(320px, 1.4fr) minmax(280px, 1fr)",
+                        "gap": "24px",
+                        "alignItems": "start",
+                        "marginBottom": "20px"
                     },
                     children=[
-                        html.Div([
-                            html.Label(
-                                "Filter",
-                                style={"fontWeight": "500", "marginBottom": "6px", "display": "block"}
-                            ),
-                            dcc.Input(
-                                id="input-topic",
-                                type="text",
-                                value="Bündnis 90/Die Grünen",
-                                style={
-                                    "width": "360px",
-                                    "padding": "10px 12px",
-                                    "borderRadius": "8px",
-                                    "border": "1px solid #ddd",
-                                    "fontSize": "14px"
-                                }
-                            )
-                        ]),
-                        html.Button(
-                            "Analyse starten",
-                            id="submit",
-                            n_clicks=0,
+
+                        # LEFT: FILTER
+                        html.Div(
+                            children=[
+                                html.Label(
+                                    "Filter",
+                                    style={
+                                        "fontWeight": "500",
+                                        "marginBottom": "6px",
+                                        "display": "block"
+                                    }
+                                ),
+                                html.Div(
+                                    style={
+                                        "display": "flex",
+                                        "gap": "12px"
+                                    },
+                                    children=[
+                                        dcc.Input(
+                                            id="input-topic",
+                                            type="text",
+                                            value="Bündnis 90/Die Grünen",
+                                            style={
+                                                "flex": "1",
+                                                "minWidth": "0",  # 🔑 extrem wichtig
+                                                "padding": "11px 12px",
+                                                "borderRadius": "10px",
+                                                "border": "1px solid #ddd",
+                                                "fontSize": "14px"
+                                            }
+                                        ),
+                                        html.Button(
+                                            "Analyse starten",
+                                            id="submit",
+                                            n_clicks=0,
+                                            style={
+                                                "padding": "11px 18px",
+                                                "borderRadius": "10px",
+                                                "border": "none",
+                                                "background": "linear-gradient(135deg, #4f46e5, #6366f1)",
+                                                "color": "white",
+                                                "fontWeight": "600",
+                                                "cursor": "pointer",
+                                                "whiteSpace": "nowrap"
+                                            }
+                                        ),
+                                    ]
+                                )
+                            ]
+                        ),
+
+                        # RIGHT: DEPTH + EDGE
+                        html.Div(
                             style={
-                                "padding": "11px 20px",
-                                "borderRadius": "10px",
-                                "border": "none",
-                                "background": "linear-gradient(135deg, #4f46e5, #6366f1)",
-                                "color": "white",
-                                "fontWeight": "600",
-                                "cursor": "pointer"
-                            }
+                                "display": "grid",
+                                "gridTemplateColumns": "1fr 1fr",
+                                "gap": "16px"
+                            },
+                            children=[
+
+                                # DEPTH
+                                html.Div(children=[
+                                    html.Label(
+                                        "Knotentiefe",
+                                        style={
+                                            "fontWeight": "500",
+                                            "marginBottom": "6px",
+                                            "display": "block"
+                                        }
+                                    ),
+                                    html.Div(
+                                        style={
+                                            "display": "flex",
+                                            "gap": "8px"
+                                        },
+                                        children=[
+                                            dcc.Input(
+                                                id="depth",
+                                                type="number",
+                                                value=2,
+                                                min=1,
+                                                step=1,
+                                                style={
+                                                    "flex": "1",
+                                                    "minWidth": "0",
+                                                    "padding": "11px 12px",
+                                                    "borderRadius": "10px",
+                                                    "border": "1px solid #ddd",
+                                                    "fontSize": "14px"
+                                                }
+                                            ),
+                                            html.Button(
+                                                "Start",
+                                                id="submit_depth",
+                                                n_clicks=0,
+                                                style={
+                                                    "padding": "11px 14px",
+                                                    "borderRadius": "10px",
+                                                    "border": "1px solid #e5e7eb",
+                                                    "background": "#f8fafc",
+                                                    "color": "#374151",
+                                                    "fontWeight": "500",
+                                                    "cursor": "pointer",
+                                                    "whiteSpace": "nowrap"
+                                                }
+                                            ),
+                                        ]
+                                    )
+                                ]),
+
+                                # EDGE
+                                html.Div(children=[
+                                    html.Label(
+                                        "Max. Kanten",
+                                        style={
+                                            "fontWeight": "500",
+                                            "marginBottom": "6px",
+                                            "display": "block"
+                                        }
+                                    ),
+                                    html.Div(
+                                        style={
+                                            "display": "flex",
+                                            "gap": "8px"
+                                        },
+                                        children=[
+                                            dcc.Input(
+                                                id="edge",
+                                                type="number",
+                                                value=10,
+                                                min=1,
+                                                step=1,
+                                                style={
+                                                    "flex": "1",
+                                                    "minWidth": "0",
+                                                    "padding": "11px 12px",
+                                                    "borderRadius": "10px",
+                                                    "border": "1px solid #ddd",
+                                                    "fontSize": "14px"
+                                                }
+                                            ),
+                                            html.Button(
+                                                "Start",
+                                                id="submit_edge",
+                                                n_clicks=0,
+                                                style={
+                                                    "padding": "11px 14px",
+                                                    "borderRadius": "10px",
+                                                    "border": "1px solid #e5e7eb",
+                                                    "background": "#f8fafc",
+                                                    "color": "#374151",
+                                                    "fontWeight": "500",
+                                                    "cursor": "pointer",
+                                                    "whiteSpace": "nowrap"
+                                                }
+                                            ),
+                                        ]
+                                    )
+                                ]),
+                            ]
                         )
                     ]
                 ),
+
+                # ---------- GRAPH ----------
                 dcc.Graph(
                     id="graph",
                     style={"height": "650px"}
@@ -274,17 +415,46 @@ app.layout = html.Div(
                 "boxShadow": "0 10px 25px rgba(0,0,0,0.06)"
             },
             children=[
-                html.H4(
-                    "Knotenübersicht",
-                    style={"marginBottom": "15px"}
+                html.Div(
+                    style={
+                        "display": "flex",
+                        "justifyContent": "space-between",
+                        "alignItems": "center",
+                        "marginBottom": "15px"
+                    },
+                    children=[
+                        html.H4(
+                            "Knotenübersicht",
+                            style={"margin": "0"}
+                        ),
+                        html.Button(
+                            "Export CSV",
+                            id="export_csv",
+                            n_clicks=0,
+                            style={
+                                "padding": "11px 14px",
+                                "borderRadius": "10px",
+                                "border": "1px solid #e5e7eb",
+                                "background": "#f8fafc",
+                                "color": "#374151",
+                                "fontWeight": "500",
+                                "cursor": "pointer",
+                                "whiteSpace": "nowrap"
+                            }
+                        )
+                    ]
                 ),
                 dash_table.DataTable(
                     id="node-table",
                     columns=[
                         {"name": "Rang", "id": "Rang"},
                         {"name": "Name", "id": "Name"},
-                        {"name": "PageRank", "id": "PageRank", "type": "numeric",
-                         "format": {"specifier": ".4f"}},
+                        {
+                            "name": "PageRank",
+                            "id": "PageRank",
+                            "type": "numeric",
+                            "format": {"specifier": ".4f"}
+                        },
                         {"name": "Eingehende Kanten", "id": "Eingehende Kanten"},
                         {"name": "Ausgehende Kanten", "id": "Ausgehende Kanten"}
                     ],
@@ -305,23 +475,28 @@ app.layout = html.Div(
                     style_data={
                         "borderBottom": "1px solid #eee"
                     }
-                )
+                ),
             ]
         )
     ]
 )
 
-
 @app.callback(
     Output("graph", "figure"),
     Output("node-table", "data"),
     Input("submit", "n_clicks"),
-    State("input-topic", "value")
+    Input("submit_depth", "n_clicks"),
+    Input("submit_edge", "n_clicks"),
+    State("input-topic", "value"),
+    State("depth", "value"),
+    State("edge", "value"),
 )
-def update(n_clicks, topic):
+def update(n_clicks, d_clicks, e_clicks, topic, depth, edge_number):
     if n_clicks == 0:
         return empty_figure(), []
-    return build_layout(n_clicks, topic)
+    depth = depth or 2
+    edge_number = edge_number or 10
+    return build_layout(n_clicks, topic, depth,  edge_number)
 
 if __name__ == "__main__":
     app.run(debug=True)
