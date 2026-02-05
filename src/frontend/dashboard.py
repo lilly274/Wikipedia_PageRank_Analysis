@@ -476,10 +476,31 @@ app.layout = html.Div(
                         "borderBottom": "1px solid #eee"
                     }
                 ),
+                dcc.Download(id="download-csv")
             ]
         )
     ]
 )
+
+@callback(
+    Output("download-csv", "data"),
+    Input("export_csv", "n_clicks"),
+    State("node-table", "data"),
+    prevent_initial_call=True
+)
+def export_table_to_csv(n_clicks, table_data):
+    if not table_data:
+        return None
+
+    df = pd.DataFrame(table_data)
+    today = datetime.strftime(datetime.now(), "%Y-%m-%d")
+
+    return dcc.send_data_frame(
+        df.to_csv,
+        f"Wikipedia-Page-Rank-Uebersicht-{today}.csv",
+        index=False,
+        encoding="utf-8"
+    )
 
 @app.callback(
     Output("graph", "figure"),
