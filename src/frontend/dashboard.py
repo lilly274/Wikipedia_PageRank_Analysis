@@ -204,8 +204,19 @@ app.layout = html.Div(
                     "in einem gerichteten Wikipedia-Netzwerk auf Basis des PageRank-Algorithmus. "
                     "Ziel ist es, reputationsbasierte Wichtigkeit und strukturelle Rollen sichtbar zu machen.",
                     style={
+                        "font-size": "18px",
                         "color": "#555",
-                        "maxWidth": "900px",
+                        "maxWidth": "1200px",
+                        "lineHeight": "1.6"
+                    }
+                ),
+                html.P(
+                    "Die praphische Visualisierung wird durch eine tabllarische Sicht relevanter Metriken ergänzt. "
+                    "Zu diesen gehören: Rang, Bezeichnung, Pagerank, eingehende Kanten und ausgehende Kanten",
+                    style={
+                        "font-size": "18px",
+                        "color": "#555",
+                        "maxWidth": "1200px",
                         "lineHeight": "1.6"
                     }
                 )
@@ -223,7 +234,6 @@ app.layout = html.Div(
             },
             children=[
 
-                # ---------- TOP BAR ----------
                 # ---------- TOP BAR ----------
                 html.Div(
                     style={
@@ -255,10 +265,9 @@ app.layout = html.Div(
                                         dcc.Input(
                                             id="input-topic",
                                             type="text",
-                                            value="Bündnis 90/Die Grünen",
                                             style={
                                                 "flex": "1",
-                                                "minWidth": "0",  # 🔑 extrem wichtig
+                                                "minWidth": "0",
                                                 "padding": "11px 12px",
                                                 "borderRadius": "10px",
                                                 "border": "1px solid #ddd",

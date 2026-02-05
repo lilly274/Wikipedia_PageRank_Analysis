@@ -24,7 +24,7 @@ def get_wikipedia_data(start_node: str, depth: int, edge_number: int):
             graph.add_edge(page_title, link)
             crawl(link, current_depth + 1)
 
-    crawl(start_node, 1)
+    crawl(page_title=start_node, current_depth=1)
 
     pagerank_scores = nx.pagerank(graph)
     return graph, pagerank_scores
