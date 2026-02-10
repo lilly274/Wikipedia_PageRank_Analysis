@@ -2,6 +2,7 @@ from datetime import datetime
 
 import dash
 import pandas as pd
+from _plotly_utils.colors import sample_colorscale
 from dash import dcc, html, Input, Output, State
 from dash import dash_table, callback
 import plotly.graph_objects as go
@@ -57,6 +58,13 @@ def build_layout(n_clicks, topic, depth, edge_number):
     pagerank = nx.pagerank(G, alpha=0.85)
     pos = nx.spring_layout(G, seed=42)
     communities = list(community_graph.greedy_modularity_communities(G))
+
+    num_communities = len(communities)
+
+    community_colors = sample_colorscale(
+        "Viridis",
+        [i / max(num_communities - 1, 1) for i in range(num_communities)]
+    )
 
     cluster_centers = {
         i: np.random.uniform(-1, 1, size=2)
@@ -161,7 +169,8 @@ def build_layout(n_clicks, topic, depth, edge_number):
         "Name": list(G.nodes()),
         "PageRank": [pagerank[n] for n in G.nodes()],
         "Eingehende Kanten": [G.in_degree(n) for n in G.nodes()],
-        "Ausgehende Kanten": [G.out_degree(n) for n in G.nodes()]
+        "Ausgehende Kanten": [G.out_degree(n) for n in G.nodes()],
+        "Community": [community_map[n] for n in G.nodes()]
     })
 
     df["Rang"] = df["PageRank"].rank(
@@ -171,7 +180,7 @@ def build_layout(n_clicks, topic, depth, edge_number):
 
     df = df.sort_values("Rang")
 
-    return fig, df.to_dict("records")
+    return fig, df.to_dict("records"),
 
 #--------------------------------------------------------------------
 
@@ -473,17 +482,27 @@ app.layout = html.Div(
                     },
                     style_cell={
                         "textAlign": "center",
-                        "padding": "10px",
-                        "fontSize": "13px"
+                        "padding": "10px 12px",
+                        "fontSize": "13px",
+                        "fontFamily": "Inter, system-ui",
+                        "color": "#1f2937",
+                        "border": "none",
                     },
                     style_header={
-                        "backgroundColor": "#f0f2f8",
+                        "backgroundColor": "#f3f4f6",
                         "fontWeight": "600",
-                        "border": "none"
+                        "color": "#374151",
+                        "borderBottom": "1px solid #e5e7eb",
+                        "textTransform": "uppercase",
+                        "fontSize": "12px",
+                        "letterSpacing": "0.04em"
                     },
                     style_data={
-                        "borderBottom": "1px solid #eee"
-                    }
+                        "borderBottom": "1px solid #f1f1f1"
+                    },
+                    style_data_conditional=[
+
+                    ], #+ community_styles
                 ),
                 dcc.Download(id="download-csv")
             ]
@@ -527,6 +546,37 @@ def update(n_clicks, d_clicks, e_clicks, topic, depth, edge_number):
     depth = depth or 2
     edge_number = edge_number or 10
     return build_layout(n_clicks, topic, depth,  edge_number)
+
+
+@app.callback(
+    Output("node-table", "style_data_conditional"),
+    Input("node-table", "data"),
+    prevent_initial_call=True
+)
+def color_names_by_community(rows):
+    if not rows:
+        return []
+
+    communities = sorted({row["Community"] for row in rows})
+
+    colors = sample_colorscale(
+        "Viridis",
+        [i / max(len(communities) - 1, 1) for i in range(len(communities))]
+    )
+
+    styles = []
+    for comm, color in zip(communities, colors):
+        styles.append({
+            "if": {
+                "filter_query": f"{{Community}} = {comm}",
+                "column_id": "Name"
+            },
+            "color": color,
+            "fontWeight": "500"
+        })
+
+    return styles
+
 
 if __name__ == "__main__":
     app.run(debug=True)
