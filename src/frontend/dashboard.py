@@ -2,17 +2,18 @@ from datetime import datetime
 import dash
 import pandas as pd
 from _plotly_utils.colors import sample_colorscale
-from dash import dcc, html, Input, Output, State
-from dash import dash_table, callback
+from dash import dcc, Input, Output, State
+from dash import callback
 import plotly.graph_objects as go
 import requests
 import networkx as nx
 import networkx.algorithms.community as community_graph
-import math
 import numpy as np
 import layout
 
+
 app = dash.Dash(__name__)
+
 
 def empty_figure():
 
@@ -56,15 +57,7 @@ def build_layout(n_clicks, topic, depth, edge_number):
         G.add_edge(edge["source"], edge["target"])
 
     pagerank = nx.pagerank(G, alpha=0.85)
-    pos = nx.spring_layout(G, seed=42)
     communities = list(community_graph.greedy_modularity_communities(G))
-
-    num_communities = len(communities)
-
-    community_colors = sample_colorscale(
-        "Viridis",
-        [i / max(num_communities - 1, 1) for i in range(num_communities)]
-    )
 
     cluster_centers = {
         i: np.random.uniform(-1, 1, size=2)
@@ -117,7 +110,7 @@ def build_layout(n_clicks, topic, depth, edge_number):
         marker=dict(
             size=sizes,
             color=node_color,
-            colorscale="Viridis",
+            colorscale="Sunsetdark", # or RdBu, Viridis, Bluered, Plasma
             line=dict(width=1, color="black")
         )
     )
@@ -182,9 +175,9 @@ def build_layout(n_clicks, topic, depth, edge_number):
 
     return fig, df.to_dict("records"),
 
-#--------------------------------------------------------------------
 
 app.layout = layout.layout()
+
 
 @callback(
     Output("download-csv", "data"),
@@ -192,7 +185,7 @@ app.layout = layout.layout()
     State("node-table", "data"),
     prevent_initial_call=True
 )
-def export_table_to_csv(table_data):
+def export_table_to_csv(n_clicks, table_data):
     if not table_data:
         return None
 
@@ -205,6 +198,7 @@ def export_table_to_csv(table_data):
         index=False,
         encoding="utf-8"
     )
+
 
 @app.callback(
     Output("graph", "figure"),
@@ -236,7 +230,7 @@ def color_names_by_community(rows):
     communities = sorted({row["Community"] for row in rows})
 
     colors = sample_colorscale(
-        "Viridis",
+        "Sunsetdark", # or RdBu, Viridis, Bluered, Plasma
         [i / max(len(communities) - 1, 1) for i in range(len(communities))]
     )
 
