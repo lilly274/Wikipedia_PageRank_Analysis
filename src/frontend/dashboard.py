@@ -37,10 +37,8 @@ def empty_figure():
 
 
 def build_layout(n_clicks, topic, depth, edge_number):
-    if n_clicks == 0:
-        return empty_figure(), []
 
-    # ---------- API ----------
+    # API
     response = requests.get(
         "http://127.0.0.1:8000/analyze",
         params={
@@ -51,7 +49,7 @@ def build_layout(n_clicks, topic, depth, edge_number):
     )
     data = response.json()
 
-    # ---------- GRAPH ----------
+    # Graph
     G = nx.DiGraph()
     for edge in data["edges"]:
         G.add_edge(edge["source"], edge["target"])
@@ -64,7 +62,7 @@ def build_layout(n_clicks, topic, depth, edge_number):
         for i in range(len(communities))
     }
 
-    # ---------- NODES ----------
+    # Nodes
     node_x, node_y, labels, raw_sizes, node_color, texts = [], [], [], [], [], []
 
     pos = {}
@@ -110,12 +108,12 @@ def build_layout(n_clicks, topic, depth, edge_number):
         marker=dict(
             size=sizes,
             color=node_color,
-            colorscale="Sunsetdark", # or RdBu, Viridis, Bluered, Plasma
+            colorscale="Bluered",
             line=dict(width=1, color="black")
         )
     )
 
-    # ---------- EDGES ----------
+    # Edges
     edge_x, edge_y, annotations = [], [], []
     for u, v in G.edges():
         x0, y0 = pos[u]
@@ -157,7 +155,7 @@ def build_layout(n_clicks, topic, depth, edge_number):
         margin=dict(l=20, r=20, t=40, b=20)
     )
 
-    # ---------- TABLE ----------
+    # Table definition
     df = pd.DataFrame({
         "Name": list(G.nodes()),
         "PageRank": [pagerank[n] for n in G.nodes()],
@@ -176,6 +174,7 @@ def build_layout(n_clicks, topic, depth, edge_number):
     return fig, df.to_dict("records"),
 
 
+# Layout
 app.layout = layout.layout()
 
 
@@ -185,7 +184,7 @@ app.layout = layout.layout()
     State("node-table", "data"),
     prevent_initial_call=True
 )
-def export_table_to_csv(n_clicks, table_data):
+def export_table_to_csv(table_data):
     if not table_data:
         return None
 
@@ -230,7 +229,7 @@ def color_names_by_community(rows):
     communities = sorted({row["Community"] for row in rows})
 
     colors = sample_colorscale(
-        "Sunsetdark", # or RdBu, Viridis, Bluered, Plasma
+        "Bluered", # or RdBu, Viridis, Bluered, Plasma
         [i / max(len(communities) - 1, 1) for i in range(len(communities))]
     )
 

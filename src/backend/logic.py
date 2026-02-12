@@ -4,7 +4,7 @@ import networkx as nx
 
 def get_wikipedia_data(start_node: str, depth: int, edge_number: int):
     wiki = wikipediaapi.Wikipedia(
-        user_agent="PolitikAnalyseBot (example@example.com)",
+        user_agent="WikipediaAnalyseBot (example@example.com)",
         language="de"
     )
 
